@@ -1,0 +1,31 @@
+{
+	"variables": [],
+	"info": {
+		"name": "Dogs",
+		"_postman_id": "b1ace7a8-6983-d1ff-6592-8b146180d1bd",
+		"description": "",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "http://localhost:3000/dogs",
+			"request": {
+				"url": "http://localhost:3000/dogs",
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/x-www-form-urlencoded",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "password:\"1234\",email:\"teste@teste\""
+				},
+				"description": ""
+			},
+			"response": []
+		}
+	]
+}
