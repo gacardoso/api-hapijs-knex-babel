@@ -16,7 +16,9 @@ module.exports = {
             database: 'dogs',
             charset: 'utf8',
 
-        }
+        },
+        
+        debug: true
 
     }
 

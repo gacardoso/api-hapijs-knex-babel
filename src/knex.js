@@ -11,6 +11,8 @@ export default require( 'knex' )( {
         database: 'dogs',
         charset: 'utf8',
 
-    }
+    },
+
+    debug: true
 
 } );

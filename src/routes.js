@@ -6,39 +6,77 @@ const routes = [
 
     {
 
+        path: '/users',
+        method: 'GET',
+        handler: (request, reply) => {
+
+            const getOperation = Knex.table('users').innerJoin('dogs', 'users.guid', 'dogs.owner')
+
+                .then((results) => {
+
+                    if (!results || results.length === 0) {
+
+                        reply({
+
+                            error: true,
+                            errMessage: 'no public dog found',
+
+                        });
+
+                    }
+
+                    reply({
+
+                        dataCount: results.length,
+                        data: results,
+
+                    });
+
+                }).catch((err) => {
+
+                    reply('server-side error');
+
+                });
+
+        }
+
+    },
+
+    {
+
         path: '/dogs',
         method: 'GET',
-        handler: ( request, reply ) => {
+        handler: (request, reply) => {
 
-            const getOperation = Knex( 'dogs' ).where( {
+            const getOperation = Knex('dogs').where({
 
                 isPublic: true
 
-            } ).select( 'breed', 'picture_url' ).then( ( results ) => {
+            }).select('breed', 'picture_url').then((results) => {
 
-                if( !results || results.length === 0 ) {
+                if (!results || results.length === 0) {
 
-                    reply( {
+                    reply({
 
                         error: true,
                         errMessage: 'no public dog found',
 
-                    } );
+                    });
 
                 }
 
-                reply( {
+                reply({
 
                     dataCount: results.length,
                     data: results,
 
-                } );
+                });
 
-            } ).catch( ( err ) => {
+            }).catch((err) => {
 
-                reply( 'server-side error' );
+                reply('server-side error');
 
-            } );
+            });
 
         }
 
@@ -48,61 +86,61 @@ const routes = [
 
         path: '/auth',
         method: 'POST',
-        handler: ( request, reply ) => {
+        handler: (request, reply) => {
 
             const { username, password } = request.payload;
 
-            const getOperation = Knex( 'users' ).where( {
+            const getOperation = Knex('users').where({
 
                 username,
 
-            } ).select( 'password', 'guid' ).then( ( [ user ] ) => {
+            }).select('password', 'guid').then(([user]) => {
 
-                if( !user ) {
+                if (!user) {
 
-                    reply( {
+                    reply({
 
                         error: true,
                         errMessage: 'the specified user was not found',
 
-                    } );
+                    });
 
                     return;
 
                 }
 
-                if( user.password === password ) {
+                if (user.password === password) {
 
-                    const token = jwt.sign( {
+                    const token = jwt.sign({
 
                         username,
                         scope: user.guid,
 
                     }, 'secret', {
 
-                        algorithm: 'HS256',
-                        expiresIn: '1h',
+                            algorithm: 'HS256',
+                            expiresIn: '1h',
 
-                    } );
+                        });
 
-                    reply( {
+                    reply({
 
                         token,
                         scope: user.guid,
 
-                    } );
+                    });
 
                 } else {
 
-                    reply( 'incorrect password' );
+                    reply('incorrect password');
 
                 }
 
-            } ).catch( ( err ) => {
+            }).catch((err) => {
 
-                reply( 'server-side error' );
+                reply('server-side error');
 
-            } );
+            });
 
         }
 
@@ -121,33 +159,33 @@ const routes = [
             }
 
         },
-        handler: ( request, reply ) => {
+        handler: (request, reply) => {
 
             const { dog } = request.payload;
 
             const guid = GUID.v4();
 
-            const insertOperation = Knex( 'dogs' ).insert( {
+            const insertOperation = Knex('dogs').insert({
 
                 owner: request.auth.credentials.scope,
                 breed: dog.breed,
                 picture_url: dog.picture_url,
                 guid,
 
-            } ).then( ( res ) => {
+            }).then((res) => {
 
-                reply( {
+                reply({
 
                     data: guid,
                     message: 'successfully created dog'
 
-                } );
+                });
 
-            } ).catch( ( err ) => {
+            }).catch((err) => {
 
-                reply( 'server-side error' );
+                reply('server-side error');
 
-            } );
+            });
 
         }
 
@@ -169,42 +207,42 @@ const routes = [
 
                 {
 
-                    method: ( request, reply ) => {
+                    method: (request, reply) => {
 
                         const { dogGuid } = request.params
-                            , { scope }    = request.auth.credentials;
+                            , { scope } = request.auth.credentials;
 
-                        const getOperation = Knex( 'dogs' ).where( {
+                        const getOperation = Knex('dogs').where({
 
                             guid: dogGuid,
 
-                        } ).select( 'owner' ).then( ( [ result ] ) => {
+                        }).select('owner').then(([result]) => {
 
-                            if( !result ) {
+                            if (!result) {
 
-                                reply( {
+                                reply({
 
                                     error: true,
-                                    errMessage: `the dog with id ${ dogGuid } was not found`
+                                    errMessage: `the dog with id ${dogGuid} was not found`
 
-                                } ).takeover();
+                                }).takeover();
 
                             }
 
-                            if( result.owner !== scope ) {
+                            if (result.owner !== scope) {
 
-                                reply( {
+                                reply({
 
                                     error: true,
-                                    errMessage: `the dog with id ${ dogGuid } is not in the current scope`
+                                    errMessage: `the dog with id ${dogGuid} is not in the current scope`
 
-                                } ).takeover();
+                                }).takeover();
 
                             }
 
                             return reply.continue();
 
-                        } );
+                        });
 
                     }
 
@@ -213,34 +251,34 @@ const routes = [
             ],
 
         },
-        handler: ( request, reply ) => {
+        handler: (request, reply) => {
 
             const { dogGuid } = request.params
-                , { dog }     = request.payload;
+                , { dog } = request.payload;
 
-            const insertOperation = Knex( 'dogs' ).where( {
+            const insertOperation = Knex('dogs').where({
 
                 guid: dogGuid,
 
-            } ).update( {
+            }).update({
 
                 breed: dog.breed,
                 picture_url: dog.picture_url,
                 isPublic: dog.isPublic,
 
-            } ).then( ( res ) => {
+            }).then((res) => {
 
-                reply( {
+                reply({
 
                     message: 'successfully updated dog'
 
-                } );
+                });
 
-            } ).catch( ( err ) => {
+            }).catch((err) => {
 
-                reply( 'server-side error' );
+                reply('server-side error');
 
-            } );
+            });
 
         }
 
